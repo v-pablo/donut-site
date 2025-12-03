@@ -3,6 +3,7 @@
   "public": true,
   "buildCommand": "echo 'Static site - no build needed'",
   "outputDirectory": ".",
+  "cleanUrls": true,
   "github": {
     "silent": true
   }
