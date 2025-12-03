@@ -131,45 +131,6 @@
                             <option value="42170">Arbitrum Nova</option>
                             <option value="100">Gnosis Chain</option>
                         </select>
-                                // --- Network Switching Logic ---
-                                async function ensureNetwork(targetNetworkId) {
-                                    if (!window.ethereum) return false;
-                                    const hexChainId = '0x' + parseInt(targetNetworkId).toString(16);
-                                    try {
-                                        const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
-                                        if (currentChainId === hexChainId) return true;
-                                        // Try to switch
-                                        await window.ethereum.request({
-                                            method: 'wallet_switchEthereumChain',
-                                            params: [{ chainId: hexChainId }]
-                                        });
-                                        return true;
-                                    } catch (switchErr) {
-                                        // If not added, try to add
-                                        if (switchErr.code === 4902 && NETWORKS[targetNetworkId]) {
-                                            const net = NETWORKS[targetNetworkId];
-                                            try {
-                                                await window.ethereum.request({
-                                                    method: 'wallet_addEthereumChain',
-                                                    params: [{
-                                                        chainId: hexChainId,
-                                                        chainName: net.name,
-                                                        nativeCurrency: net.nativeCurrency,
-                                                        rpcUrls: [net.rpcUrl],
-                                                        blockExplorerUrls: [net.blockExplorer]
-                                                    }]
-                                                });
-                                                return true;
-                                            } catch (addErr) {
-                                                alert('Failed to add network: ' + addErr.message);
-                                                return false;
-                                            }
-                                        } else {
-                                            alert('Failed to switch network: ' + switchErr.message);
-                                            return false;
-                                        }
-                                    }
-                                }
                         <label class="block text-sm text-gray-400">Amount (DONUT)</label>
                         <input id="mining-amount" type="number" value="100" class="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-md p-3 text-white">
 
@@ -890,6 +851,46 @@
             } catch (err) {
                 console.error(err);
                 notice.textContent = 'Failed to start mining: ' + (err.message || err);
+            }
+        }
+
+        // --- Network Switching Logic ---
+        async function ensureNetwork(targetNetworkId) {
+            if (!window.ethereum) return false;
+            const hexChainId = '0x' + parseInt(targetNetworkId).toString(16);
+            try {
+                const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
+                if (currentChainId === hexChainId) return true;
+                // Try to switch
+                await window.ethereum.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: hexChainId }]
+                });
+                return true;
+            } catch (switchErr) {
+                // If not added, try to add
+                if (switchErr.code === 4902 && NETWORKS[targetNetworkId]) {
+                    const net = NETWORKS[targetNetworkId];
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [{
+                                chainId: hexChainId,
+                                chainName: net.name,
+                                nativeCurrency: net.nativeCurrency,
+                                rpcUrls: [net.rpcUrl],
+                                blockExplorerUrls: [net.blockExplorer]
+                            }]
+                        });
+                        return true;
+                    } catch (addErr) {
+                        alert('Failed to add network: ' + addErr.message);
+                        return false;
+                    }
+                } else {
+                    alert('Failed to switch network: ' + switchErr.message);
+                    return false;
+                }
             }
         }
 
